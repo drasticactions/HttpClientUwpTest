@@ -17,6 +17,9 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Windows.Web.Http;
+using Windows.Web.Http.Filters;
+using HttpClient = System.Net.Http.HttpClient;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -41,11 +44,22 @@ namespace TestSaUwp
             ConsoleTest.Text = string.Empty;
             ConsoleTest.Text = "First Cookie Result";
 
+            // NOTE: Does not show every cookie. bbuserid and bbpassword are not apart of the cookie container. 
+            // But they are in the console project... and they do get sent with every new httpclient... wtf.
             foreach (var cookie in cookieList)
             {
                 ConsoleTest.Text += Environment.NewLine + "Cookie Name: " + cookie.Name;
                 ConsoleTest.Text += Environment.NewLine + "Cookie Domain: " + cookie.Domain;
                 ConsoleTest.Text += Environment.NewLine + "Cookie HttpOnly: " + cookie.HttpOnly;
+            }
+
+            // This actually does show bbuserid and bbpassword. While they were not in the cookie container, they do
+            // get stored in the "cookie manager". Again, why here?
+            var filter = new HttpBaseProtocolFilter();
+            var cookieManager = filter.CookieManager;
+            foreach (var cookie in cookieManager.GetCookies(new Uri("http://fake.forums.somethingawful.com")))
+            {
+                cookieManager.DeleteCookie(cookie);
             }
 
             result = await Test(UsernameTextbox.Text, PasswordTextBox.Password);
